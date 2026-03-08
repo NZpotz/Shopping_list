@@ -1,0 +1,1314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Food Shopping List Builder</title>
+  <style>
+    :root{--bg:#0b1220;--panel:#111a2e;--panel2:#0f172a;--text:#e6edf7;--muted:#9fb0cc;--line:#233252;--accent:#66c2ff;--manual:#b8ffdd;--recipe:#ffd28a;--danger:#ff6b6b;--btn:#1b2a4a;--btn2:#21355f;}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#070b14);color:var(--text)}
+    header{max-width:1200px;margin:0 auto;padding:16px 16px 0;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+    h1{margin:0;font-size:18px;letter-spacing:0.2px}
+    .sub{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.35}
+    .wrap{max-width:1200px;margin:0 auto;padding:16px}
+    .panel{background:rgba(17,26,46,0.85);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,0.25)}
+    .panel h2{margin:0 0 10px 0;font-size:14px;color:#d7e4ff}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .col{display:flex;flex-direction:column;gap:8px}
+    .grow{flex:1}
+    label{font-size:12px;color:var(--muted)}
+    input[type="text"],select{width:100%;padding:10px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);outline:none}
+    input[type="text"]::placeholder{color:#7587a8}
+    .btn{padding:10px 12px;background:var(--btn);border:1px solid var(--line);color:var(--text);border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;transition:background 120ms ease}
+    .btn:hover{background:var(--btn2)}
+    .btn.primary{border-color:rgba(102,194,255,0.7)}
+    .btn.danger{border-color:rgba(255,107,107,0.65);color:#ffd1d1}
+    .btn.ghost{background:transparent}
+    .btn.small{padding:7px 9px;font-size:12px;border-radius:9px}
+    .btn:disabled{opacity:0.45;cursor:not-allowed}
+    .pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(15,23,42,0.6);color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
+    .pill.active{border-color:rgba(102,194,255,0.7);color:#d7f0ff}
+    .tabs{display:flex;gap:8px;margin-bottom:10px}
+    .tab{flex:1;text-align:center;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:rgba(15,23,42,0.6);cursor:pointer;font-weight:800;font-size:13px;color:var(--muted)}
+    .tab.active{color:var(--text);border-color:rgba(102,194,255,0.7);background:rgba(27,42,74,0.75)}
+    .subTabs{display:flex;gap:8px;margin:6px 0 10px 0}
+    .subTab{flex:1;text-align:center;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:rgba(15,23,42,0.6);cursor:pointer;font-weight:800;font-size:12px;color:var(--muted)}
+    .subTab.active{color:var(--text);border-color:rgba(102,194,255,0.7);background:rgba(27,42,74,0.75)}
+    .split{display:grid;grid-template-columns:0.95fr 1.05fr;gap:12px}
+    .picker{border:1px solid var(--line);background:rgba(15,23,42,0.55);border-radius:12px;padding:10px}
+    .picker .head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .alpha{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .list{margin-top:10px;max-height:300px;overflow:auto;border-top:1px dashed rgba(35,50,82,0.8);padding-top:10px}
+    .itemRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 8px;border:1px solid rgba(35,50,82,0.6);border-radius:10px;background:rgba(15,23,42,0.55);margin-bottom:8px;cursor:pointer}
+    .itemRow:hover{border-color:rgba(102,194,255,0.45)}
+    .itemRow .name{font-weight:800;font-size:13px}
+    .itemRow .meta{font-size:12px;color:var(--muted)}
+    .hr{height:1px;background:rgba(35,50,82,0.8);margin:12px 0}
+    .twoCol{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .mini{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.35}
+    .hint{font-size:12px;color:#b7c7e6;margin-top:6px;line-height:1.35}
+    .shopItem{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;padding:10px 10px;border-radius:12px;border:1px solid rgba(35,50,82,0.7);background:rgba(15,23,42,0.55)}
+    .shopItem.manual{border-left:4px solid rgba(184,255,221,0.8)}
+    .shopItem.recipe{border-left:4px solid rgba(255,210,138,0.85)}
+    .shopItem.checked{opacity:0.18;filter:saturate(0.12)}
+    .shopItem .title{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+    .shopItem .title .name{font-weight:900;font-size:13px}
+    .shopItem .title .qty{font-size:12px;color:var(--muted);font-weight:700}
+    .shopItem .title .tag{font-size:11px;color:var(--muted);border:1px solid rgba(35,50,82,0.7);border-radius:999px;padding:3px 8px;background:rgba(17,26,46,0.6)}
+    .groupHeader{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:10px;border:1px solid rgba(35,50,82,0.7);background:rgba(17,26,46,0.45);margin:12px 0 8px 0;font-weight:900;font-size:12px;color:#d7e4ff}
+    .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;border:1px solid rgba(35,50,82,0.7);background:rgba(17,26,46,0.6);color:var(--muted);font-size:11px;font-weight:700}
+    .recipeGrid{display:grid;grid-template-columns:0.9fr 1.1fr;gap:12px}
+    @media (max-width:980px){.split{grid-template-columns:1fr}.recipeGrid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Food Shopping List Builder</h1>
+    <div class="sub">Local only (this browser). Use Export to back up.</div>
+  </div>
+  <div class="row">
+    <button class="btn ghost small" id="btnUndo" disabled>Undo</button>
+    <button class="btn ghost small" id="btnExport">Export</button>
+    <button class="btn ghost small" id="btnImport">Import</button>
+    <button class="btn danger small" id="btnReset">Reset</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="panel">
+    <h2>App</h2>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="build">Build</div>
+      <div class="tab" data-tab="shopping">Shopping</div>
+      <div class="tab" data-tab="manage">Manage</div>
+    </div>
+
+    <!-- Build -->
+    <div id="tab-build">
+      <div class="split">
+        <div class="picker">
+          <h2 style="margin:0 0 10px 0; font-size:13px;">Manual add</h2>
+          <div class="head">
+            <div class="col grow">
+              <label for="itemSearch">Find item (live)</label>
+              <input id="itemSearch" type="text" placeholder="Type to filter..." autocomplete="off" />
+              <div class="hint" id="itemSearchHint"></div>
+            </div>
+            <div class="col" style="min-width:160px">
+              <label for="itemGroupFilter">Group</label>
+              <select id="itemGroupFilter"></select>
+            </div>
+          </div>
+          <div class="alpha" id="itemAlphaFilter"></div>
+          <div class="list" id="itemResults"></div>
+
+          <div class="hr"></div>
+          <div class="twoCol">
+            <div class="col"><label for="manualName">Item name</label><input id="manualName" type="text" placeholder="e.g. Milk" /></div>
+            <div class="col"><label for="manualGroup">Group (for new items)</label><select id="manualGroup"></select></div>
+          </div>
+          <div class="twoCol">
+            <div class="col"><label for="manualAmount">Amount</label><input id="manualAmount" type="text" placeholder="e.g. 2" /></div>
+            <div class="col"><label for="manualUnit">Unit</label>
+              <select id="manualUnit"><option value="">(none)</option><option>ea</option><option>kg</option><option>g</option><option>L</option><option>mL</option><option>pack</option><option>box</option><option>bag</option><option>bottle</option><option>can</option><option>jar</option><option>tin</option><option>loaf</option><option>bunch</option></select>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn primary grow" id="btnAddManual">Add to shopping</button>
+            <button class="btn" id="btnClearManual">Clear</button>
+          </div>
+        </div>
+
+        <div class="picker">
+          <h2 style="margin:0 0 10px 0; font-size:13px;">Recipe builder</h2>
+          <div class="col">
+            <label for="recipeName">Recipe name (draft saved automatically)</label>
+            <input id="recipeName" type="text" placeholder="e.g. Chicken stir-fry" autocomplete="off" />
+          </div>
+          <div class="hr"></div>
+
+          <div class="col">
+            <label>Add ingredient (live)</label>
+            <div class="row">
+              <input id="ingSearch" class="grow" type="text" placeholder="Type to filter catalogue..." autocomplete="off" />
+              <select id="ingGroupFilter" style="min-width:160px"></select>
+            </div>
+            <div class="hint" id="ingSearchHint"></div>
+            <div class="alpha" id="ingAlphaFilter"></div>
+            <div class="list" id="ingResults"></div>
+
+            <div class="twoCol">
+              <div class="col"><label for="ingName">Ingredient item</label><input id="ingName" type="text" placeholder="Click from list or type new" /></div>
+              <div class="col"><label for="ingGroup">Group (for new items)</label><select id="ingGroup"></select></div>
+            </div>
+            <div class="twoCol">
+              <div class="col"><label for="ingAmount">Amount</label><input id="ingAmount" type="text" placeholder="e.g. 500" /></div>
+              <div class="col"><label for="ingUnit">Unit</label>
+                <select id="ingUnit"><option value="">(none)</option><option>ea</option><option>kg</option><option>g</option><option>L</option><option>mL</option><option>pack</option><option>box</option><option>bag</option><option>bottle</option><option>can</option><option>jar</option><option>tin</option><option>loaf</option><option>bunch</option></select>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px">
+              <button class="btn primary grow" id="btnAddIngredient">Add ingredient</button>
+              <button class="btn" id="btnClearIngredient">Clear</button>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+          <h2 style="margin:0 0 8px 0; font-size:13px;">Draft ingredients</h2>
+          <div id="recipeIngredientsPreview" class="col" style="gap:8px"></div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn primary grow" id="btnSaveRecipe">Save recipe</button>
+            <button class="btn danger" id="btnClearRecipeDraft">Clear draft</button>
+          </div>
+
+          <div class="hr"></div>
+          <h2 style="margin:0 0 10px 0; font-size:13px;">Saved recipes</h2>
+          <div class="recipeGrid">
+            <div>
+              <div class="col"><label for="recipeSearch">Search recipes</label><input id="recipeSearch" type="text" placeholder="Type to filter recipes..." autocomplete="off" /></div>
+              <div class="list" id="recipesList" style="max-height:220px"></div>
+            </div>
+            <div>
+              <div class="hint" id="selectedRecipeHint">Select a recipe to see its items.</div>
+              <div class="list" id="selectedRecipeItems" style="max-height:220px"></div>
+              <div class="row" style="margin-top:10px">
+                <button class="btn primary grow" id="btnAddSelectedRecipeItems" disabled>Add selected items</button>
+                <button class="btn" id="btnAddAllRecipeItems" disabled>Add all items</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shopping -->
+    <div id="tab-shopping" style="display:none">
+      <h2>Shopping list</h2>
+      <div class="subTabs">
+        <div class="subTab active" data-subtab="review">Review</div>
+        <div class="subTab" data-subtab="instore">In-store</div>
+      </div>
+      <div class="row" style="align-items:flex-end">
+        <div class="col grow"><label for="shopSearch">Search</label><input id="shopSearch" type="text" placeholder="Filter items..." autocomplete="off" /></div>
+        <div class="col" style="min-width:180px"><label for="shopGroup">Group</label><select id="shopGroup"></select></div>
+        <div class="col" style="min-width:180px"><label>Sort</label><div class="row" style="gap:6px"><span class="pill active" data-shop-sort="group">Group</span><span class="pill" data-shop-sort="alpha">A–Z</span></div></div>
+      </div>
+      <div class="hint" id="shopCounts" style="margin-top:8px"></div>
+      <div id="shopReviewActions" class="row" style="margin-top:10px">
+        <button class="btn small" id="btnKeepAll">Keep all</button>
+        <button class="btn small" id="btnExcludeAll">Exclude all</button>
+        <button class="btn small" id="btnRemoveExcluded">Remove excluded</button>
+        <button class="btn small" id="btnUncheckAll">Uncheck all</button>
+      </div>
+      <div id="shopInstoreActions" class="row" style="margin-top:10px; display:none">
+        <button class="btn small" id="btnInstoreUncheckAll">Uncheck all</button>
+      </div>
+      <div class="hr"></div>
+      <div id="shoppingList"></div>
+    </div>
+
+    <!-- Manage -->
+    <div id="tab-manage" style="display:none">
+      <div class="picker"><h2 style="margin:0 0 10px 0; font-size:13px;">Manage</h2><div class="mini">Use Export/Import to bulk edit.</div></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const STORAGE_KEY = "shopListBuilder_v5";
+  const Groups = ['All', 'Fruit & Veg', 'Meat & Seafood', 'Deli', 'Dairy & Eggs', 'Bakery', 'Pantry', 'Snacks', 'Frozen', 'Beverages', 'Household', 'Health & Beauty', 'Baby', 'Pet', 'Other'];
+
+  const seedItemsNZ = [
+    ["Apples","Fruit & Veg"],
+    ["Gala apples","Fruit & Veg"],
+    ["Granny smith apples","Fruit & Veg"],
+    ["Braeburn apples","Fruit & Veg"],
+    ["Pink lady apples","Fruit & Veg"],
+    ["Bananas","Fruit & Veg"],
+    ["Oranges","Fruit & Veg"],
+    ["Mandarins","Fruit & Veg"],
+    ["Grapefruit","Fruit & Veg"],
+    ["Lemons","Fruit & Veg"],
+    ["Limes","Fruit & Veg"],
+    ["Kiwifruit","Fruit & Veg"],
+    ["Avocados","Fruit & Veg"],
+    ["Grapes","Fruit & Veg"],
+    ["Pears","Fruit & Veg"],
+    ["Peaches","Fruit & Veg"],
+    ["Nectarines","Fruit & Veg"],
+    ["Plums","Fruit & Veg"],
+    ["Apricots","Fruit & Veg"],
+    ["Cherries","Fruit & Veg"],
+    ["Strawberries","Fruit & Veg"],
+    ["Blueberries","Fruit & Veg"],
+    ["Raspberries","Fruit & Veg"],
+    ["Blackberries","Fruit & Veg"],
+    ["Pineapple","Fruit & Veg"],
+    ["Mango","Fruit & Veg"],
+    ["Papaya","Fruit & Veg"],
+    ["Passionfruit","Fruit & Veg"],
+    ["Watermelon","Fruit & Veg"],
+    ["Rockmelon","Fruit & Veg"],
+    ["Pomegranate","Fruit & Veg"],
+    ["Figs","Fruit & Veg"],
+    ["Feijoas","Fruit & Veg"],
+    ["Tamarillos","Fruit & Veg"],
+    ["Dates","Fruit & Veg"],
+    ["Dried apricots","Fruit & Veg"],
+    ["Sultanas","Fruit & Veg"],
+    ["Raisins","Fruit & Veg"],
+    ["Prunes","Fruit & Veg"],
+    ["Tomatoes","Fruit & Veg"],
+    ["Cherry tomatoes","Fruit & Veg"],
+    ["Cucumbers","Fruit & Veg"],
+    ["Capsicum","Fruit & Veg"],
+    ["Chillies","Fruit & Veg"],
+    ["Carrots","Fruit & Veg"],
+    ["Potatoes","Fruit & Veg"],
+    ["Kūmara","Fruit & Veg"],
+    ["Onions","Fruit & Veg"],
+    ["Red onions","Fruit & Veg"],
+    ["Garlic","Fruit & Veg"],
+    ["Ginger","Fruit & Veg"],
+    ["Broccoli","Fruit & Veg"],
+    ["Cauliflower","Fruit & Veg"],
+    ["Cabbage","Fruit & Veg"],
+    ["Red cabbage","Fruit & Veg"],
+    ["Savoy cabbage","Fruit & Veg"],
+    ["Brussels sprouts","Fruit & Veg"],
+    ["Lettuce","Fruit & Veg"],
+    ["Cos lettuce","Fruit & Veg"],
+    ["Iceberg lettuce","Fruit & Veg"],
+    ["Spinach","Fruit & Veg"],
+    ["Rocket","Fruit & Veg"],
+    ["Kale","Fruit & Veg"],
+    ["Silverbeet","Fruit & Veg"],
+    ["Mushrooms","Fruit & Veg"],
+    ["Courgette","Fruit & Veg"],
+    ["Zucchini","Fruit & Veg"],
+    ["Eggplant","Fruit & Veg"],
+    ["Pumpkin","Fruit & Veg"],
+    ["Butternut squash","Fruit & Veg"],
+    ["Celery","Fruit & Veg"],
+    ["Leeks","Fruit & Veg"],
+    ["Spring onions","Fruit & Veg"],
+    ["Green beans","Fruit & Veg"],
+    ["Snow peas","Fruit & Veg"],
+    ["Sugar snap peas","Fruit & Veg"],
+    ["Asparagus","Fruit & Veg"],
+    ["Beetroot","Fruit & Veg"],
+    ["Turnips","Fruit & Veg"],
+    ["Parsnips","Fruit & Veg"],
+    ["Swede","Fruit & Veg"],
+    ["Radishes","Fruit & Veg"],
+    ["Corn","Fruit & Veg"],
+    ["Fresh peas","Fruit & Veg"],
+    ["Bok choy","Fruit & Veg"],
+    ["Pak choi","Fruit & Veg"],
+    ["Asian greens","Fruit & Veg"],
+    ["Bean sprouts","Fruit & Veg"],
+    ["Fresh herbs","Fruit & Veg"],
+    ["Basil","Fruit & Veg"],
+    ["Parsley","Fruit & Veg"],
+    ["Coriander","Fruit & Veg"],
+    ["Mint","Fruit & Veg"],
+    ["Dill","Fruit & Veg"],
+    ["Thyme","Fruit & Veg"],
+    ["Rosemary","Fruit & Veg"],
+    ["Sage","Fruit & Veg"],
+    ["Chives","Fruit & Veg"],
+    ["Salad mix","Fruit & Veg"],
+    ["Coleslaw mix","Fruit & Veg"],
+    ["Bagged spinach","Fruit & Veg"],
+    ["Bagged lettuce","Fruit & Veg"],
+    ["Fresh salad kit","Fruit & Veg"],
+    ["Chicken breast","Meat & Seafood"],
+    ["Chicken thighs","Meat & Seafood"],
+    ["Whole chicken","Meat & Seafood"],
+    ["Chicken drumsticks","Meat & Seafood"],
+    ["Chicken wings","Meat & Seafood"],
+    ["Chicken mince","Meat & Seafood"],
+    ["Turkey mince","Meat & Seafood"],
+    ["Beef mince","Meat & Seafood"],
+    ["Beef steak","Meat & Seafood"],
+    ["Beef roast","Meat & Seafood"],
+    ["Beef ribs","Meat & Seafood"],
+    ["Beef stir-fry strips","Meat & Seafood"],
+    ["Beef burgers","Meat & Seafood"],
+    ["Beef sausages","Meat & Seafood"],
+    ["Lamb chops","Meat & Seafood"],
+    ["Lamb roast","Meat & Seafood"],
+    ["Lamb mince","Meat & Seafood"],
+    ["Lamb shanks","Meat & Seafood"],
+    ["Pork chops","Meat & Seafood"],
+    ["Pork roast","Meat & Seafood"],
+    ["Pork mince","Meat & Seafood"],
+    ["Pork belly","Meat & Seafood"],
+    ["Pork sausages","Meat & Seafood"],
+    ["Bacon","Meat & Seafood"],
+    ["Ham","Meat & Seafood"],
+    ["Salami","Meat & Seafood"],
+    ["Prosciutto","Meat & Seafood"],
+    ["Pepperoni","Meat & Seafood"],
+    ["Fresh fish","Meat & Seafood"],
+    ["Salmon","Meat & Seafood"],
+    ["White fish fillets","Meat & Seafood"],
+    ["Tuna (fresh)","Meat & Seafood"],
+    ["Smoked fish","Meat & Seafood"],
+    ["Prawns","Meat & Seafood"],
+    ["Mussels","Meat & Seafood"],
+    ["Squid","Meat & Seafood"],
+    ["Scallops","Meat & Seafood"],
+    ["Crab meat","Meat & Seafood"],
+    ["Hummus","Deli"],
+    ["Pesto","Deli"],
+    ["Olives","Deli"],
+    ["Sundried tomatoes","Deli"],
+    ["Antipasto mix","Deli"],
+    ["Dips","Deli"],
+    ["Salsa","Deli"],
+    ["Guacamole","Deli"],
+    ["Tapenade","Deli"],
+    ["Coleslaw","Deli"],
+    ["Potato salad","Deli"],
+    ["Pasta salad","Deli"],
+    ["Ready-made salads","Deli"],
+    ["Stuffed olives","Deli"],
+    ["Marinated vegetables","Deli"],
+    ["Milk","Dairy & Eggs"],
+    ["Trim milk","Dairy & Eggs"],
+    ["Skim milk","Dairy & Eggs"],
+    ["Full cream milk","Dairy & Eggs"],
+    ["Lactose-free milk","Dairy & Eggs"],
+    ["Almond milk","Dairy & Eggs"],
+    ["Soy milk","Dairy & Eggs"],
+    ["Oat milk","Dairy & Eggs"],
+    ["Coconut milk (chilled)","Dairy & Eggs"],
+    ["Butter","Dairy & Eggs"],
+    ["Margarine","Dairy & Eggs"],
+    ["Cream","Dairy & Eggs"],
+    ["Sour cream","Dairy & Eggs"],
+    ["Greek yoghurt","Dairy & Eggs"],
+    ["Yoghurt","Dairy & Eggs"],
+    ["Kefir","Dairy & Eggs"],
+    ["Custard","Dairy & Eggs"],
+    ["Whipped cream","Dairy & Eggs"],
+    ["Cheddar cheese","Dairy & Eggs"],
+    ["Tasty cheese","Dairy & Eggs"],
+    ["Mozzarella","Dairy & Eggs"],
+    ["Parmesan","Dairy & Eggs"],
+    ["Feta","Dairy & Eggs"],
+    ["Halloumi","Dairy & Eggs"],
+    ["Cream cheese","Dairy & Eggs"],
+    ["Cottage cheese","Dairy & Eggs"],
+    ["Ricotta","Dairy & Eggs"],
+    ["Blue cheese","Dairy & Eggs"],
+    ["Sliced cheese","Dairy & Eggs"],
+    ["Grated cheese","Dairy & Eggs"],
+    ["Goat cheese","Dairy & Eggs"],
+    ["Eggs","Dairy & Eggs"],
+    ["Free-range eggs","Dairy & Eggs"],
+    ["Bread","Bakery"],
+    ["White bread","Bakery"],
+    ["Wholemeal bread","Bakery"],
+    ["Sourdough","Bakery"],
+    ["Gluten-free bread","Bakery"],
+    ["Bagels","Bakery"],
+    ["Wraps","Bakery"],
+    ["Pita bread","Bakery"],
+    ["Naan bread","Bakery"],
+    ["Burger buns","Bakery"],
+    ["Hot dog buns","Bakery"],
+    ["English muffins","Bakery"],
+    ["Crumpets","Bakery"],
+    ["Croissants","Bakery"],
+    ["Muffins","Bakery"],
+    ["Scones","Bakery"],
+    ["Pizza bases","Bakery"],
+    ["Breadcrumbs","Bakery"],
+    ["Rice","Pantry"],
+    ["Basmati rice","Pantry"],
+    ["Jasmine rice","Pantry"],
+    ["Brown rice","Pantry"],
+    ["Arborio rice","Pantry"],
+    ["Quinoa","Pantry"],
+    ["Couscous","Pantry"],
+    ["Bulgur","Pantry"],
+    ["Pearl barley","Pantry"],
+    ["Pasta","Pantry"],
+    ["Spaghetti","Pantry"],
+    ["Penne","Pantry"],
+    ["Macaroni","Pantry"],
+    ["Lasagne sheets","Pantry"],
+    ["Rice noodles","Pantry"],
+    ["Udon noodles","Pantry"],
+    ["Instant noodles","Pantry"],
+    ["Canned spaghetti","Pantry"],
+    ["Flour","Pantry"],
+    ["Plain flour","Pantry"],
+    ["Self-raising flour","Pantry"],
+    ["Gluten-free flour","Pantry"],
+    ["Sugar","Pantry"],
+    ["Brown sugar","Pantry"],
+    ["Icing sugar","Pantry"],
+    ["Baking powder","Pantry"],
+    ["Baking soda","Pantry"],
+    ["Yeast","Pantry"],
+    ["Vanilla essence","Pantry"],
+    ["Cocoa powder","Pantry"],
+    ["Chocolate chips","Pantry"],
+    ["Gelatine","Pantry"],
+    ["Cornflour","Pantry"],
+    ["Salt","Pantry"],
+    ["Pepper","Pantry"],
+    ["Paprika","Pantry"],
+    ["Smoked paprika","Pantry"],
+    ["Cumin","Pantry"],
+    ["Coriander (ground)","Pantry"],
+    ["Turmeric","Pantry"],
+    ["Curry powder","Pantry"],
+    ["Garam masala","Pantry"],
+    ["Chilli flakes","Pantry"],
+    ["Oregano","Pantry"],
+    ["Italian herbs","Pantry"],
+    ["Cinnamon","Pantry"],
+    ["Nutmeg","Pantry"],
+    ["Mixed spice","Pantry"],
+    ["Bay leaves","Pantry"],
+    ["Olive oil","Pantry"],
+    ["Vegetable oil","Pantry"],
+    ["Canola oil","Pantry"],
+    ["Coconut oil","Pantry"],
+    ["Sesame oil","Pantry"],
+    ["Vinegar","Pantry"],
+    ["Apple cider vinegar","Pantry"],
+    ["Balsamic vinegar","Pantry"],
+    ["Rice vinegar","Pantry"],
+    ["Soy sauce","Pantry"],
+    ["Tamari","Pantry"],
+    ["Fish sauce","Pantry"],
+    ["Oyster sauce","Pantry"],
+    ["Hoisin sauce","Pantry"],
+    ["Sweet chilli sauce","Pantry"],
+    ["BBQ sauce","Pantry"],
+    ["Tomato sauce","Pantry"],
+    ["Ketchup","Pantry"],
+    ["Mayonnaise","Pantry"],
+    ["Mustard","Pantry"],
+    ["Dijon mustard","Pantry"],
+    ["Hot sauce","Pantry"],
+    ["Sriracha","Pantry"],
+    ["Salad dressing","Pantry"],
+    ["Vinaigrette","Pantry"],
+    ["Tomato paste","Pantry"],
+    ["Passata","Pantry"],
+    ["Pasta sauce","Pantry"],
+    ["Stock cubes","Pantry"],
+    ["Liquid stock","Pantry"],
+    ["Gravy","Pantry"],
+    ["Canned tomatoes","Pantry"],
+    ["Diced tomatoes (canned)","Pantry"],
+    ["Canned beans","Pantry"],
+    ["Kidney beans","Pantry"],
+    ["Cannellini beans","Pantry"],
+    ["Black beans","Pantry"],
+    ["Chickpeas (canned)","Pantry"],
+    ["Lentils (canned)","Pantry"],
+    ["Coconut milk (canned)","Pantry"],
+    ["Coconut cream","Pantry"],
+    ["Canned corn","Pantry"],
+    ["Canned peas","Pantry"],
+    ["Canned soup","Pantry"],
+    ["Canned tuna","Pantry"],
+    ["Canned salmon","Pantry"],
+    ["Canned sardines","Pantry"],
+    ["Anchovies","Pantry"],
+    ["Pickles","Pantry"],
+    ["Gherkins","Pantry"],
+    ["Capers","Pantry"],
+    ["Olives (jar)","Pantry"],
+    ["Peanut butter","Pantry"],
+    ["Jam","Pantry"],
+    ["Honey","Pantry"],
+    ["Maple syrup","Pantry"],
+    ["Breakfast cereal","Pantry"],
+    ["Oats","Pantry"],
+    ["Muesli","Pantry"],
+    ["Granola","Pantry"],
+    ["Tea","Pantry"],
+    ["Coffee","Pantry"],
+    ["Instant coffee","Pantry"],
+    ["Hot chocolate","Pantry"],
+    ["Chips","Snacks"],
+    ["Corn chips","Snacks"],
+    ["Crackers","Snacks"],
+    ["Rice crackers","Snacks"],
+    ["Biscuits","Snacks"],
+    ["Chocolate","Snacks"],
+    ["Lollies","Snacks"],
+    ["Muesli bars","Snacks"],
+    ["Popcorn","Snacks"],
+    ["Nuts","Snacks"],
+    ["Trail mix","Snacks"],
+    ["Dried fruit","Snacks"],
+    ["Pretzels","Snacks"],
+    ["Rice cakes","Snacks"],
+    ["Protein bars","Snacks"],
+    ["Jerky","Snacks"],
+    ["Frozen peas","Frozen"],
+    ["Frozen mixed veg","Frozen"],
+    ["Frozen berries","Frozen"],
+    ["Frozen spinach","Frozen"],
+    ["Frozen corn","Frozen"],
+    ["Frozen chips","Frozen"],
+    ["Frozen wedges","Frozen"],
+    ["Frozen fish","Frozen"],
+    ["Frozen dumplings","Frozen"],
+    ["Frozen pizza","Frozen"],
+    ["Frozen meals","Frozen"],
+    ["Ice cream","Frozen"],
+    ["Frozen pastry","Frozen"],
+    ["Frozen fruit","Frozen"],
+    ["Sparkling water","Beverages"],
+    ["Still water","Beverages"],
+    ["Juice","Beverages"],
+    ["Soft drink","Beverages"],
+    ["Sports drink","Beverages"],
+    ["Energy drink","Beverages"],
+    ["Iced tea","Beverages"],
+    ["Beer","Beverages"],
+    ["Wine","Beverages"],
+    ["Cider","Beverages"],
+    ["Coffee beans","Beverages"],
+    ["Ground coffee","Beverages"],
+    ["Tea (herbal)","Beverages"],
+    ["Cordial","Beverages"],
+    ["Dishwashing liquid","Household"],
+    ["Dishwasher tablets","Household"],
+    ["Laundry detergent","Household"],
+    ["Fabric softener","Household"],
+    ["Toilet paper","Household"],
+    ["Paper towels","Household"],
+    ["Tissues","Household"],
+    ["Rubbish bags","Household"],
+    ["Cling film","Household"],
+    ["Baking paper","Household"],
+    ["Aluminium foil","Household"],
+    ["Freezer bags","Household"],
+    ["Sandwich bags","Household"],
+    ["Food containers","Household"],
+    ["Sponges","Household"],
+    ["Scourers","Household"],
+    ["Dish cloths","Household"],
+    ["Microfibre cloths","Household"],
+    ["Multi-purpose cleaner","Household"],
+    ["Bathroom cleaner","Household"],
+    ["Glass cleaner","Household"],
+    ["Disinfectant","Household"],
+    ["Bleach","Household"],
+    ["Spray and wipe","Household"],
+    ["Air freshener","Household"],
+    ["Bin liners","Household"],
+    ["Matches","Household"],
+    ["Firelighters","Household"],
+    ["Toothpaste","Health & Beauty"],
+    ["Toothbrush","Health & Beauty"],
+    ["Floss","Health & Beauty"],
+    ["Mouthwash","Health & Beauty"],
+    ["Deodorant","Health & Beauty"],
+    ["Shampoo","Health & Beauty"],
+    ["Conditioner","Health & Beauty"],
+    ["Soap","Health & Beauty"],
+    ["Body wash","Health & Beauty"],
+    ["Hand sanitiser","Health & Beauty"],
+    ["Moisturiser","Health & Beauty"],
+    ["Sunscreen","Health & Beauty"],
+    ["Lip balm","Health & Beauty"],
+    ["Razor blades","Health & Beauty"],
+    ["Shaving cream","Health & Beauty"],
+    ["Pain relief","Health & Beauty"],
+    ["Plasters","Health & Beauty"],
+    ["Antiseptic cream","Health & Beauty"],
+    ["Vitamins","Health & Beauty"],
+    ["Allergy tablets","Health & Beauty"],
+    ["Cold and flu medicine","Health & Beauty"],
+    ["Thermometer","Health & Beauty"],
+    ["Nappies","Baby"],
+    ["Baby wipes","Baby"],
+    ["Baby formula","Baby"],
+    ["Baby food pouches","Baby"],
+    ["Baby shampoo","Baby"],
+    ["Baby lotion","Baby"],
+    ["Nappy rash cream","Baby"],
+    ["Dog food","Pet"],
+    ["Cat food","Pet"],
+    ["Pet treats","Pet"],
+    ["Cat litter","Pet"],
+    ["Flea treatment","Pet"],
+    ["Dog shampoo","Pet"],
+    ["Bird seed","Pet"],
+    ["Fish food","Pet"],
+    ["Batteries","Other"],
+    ["Light bulbs","Other"],
+    ["BBQ charcoal","Other"],
+    ["Ice","Other"],
+    ["Candles","Other"],
+    ["Garden gloves","Other"]
+  ];
+  const SEED_VERSION = 6;
+
+  function uid(prefix="id"){return prefix + "_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16)}
+  function norm(s){return (s || "").trim().replace(/\s+/g, " " )}
+  function titleCase(s){const t=norm(s); if(!t) return ""; return t.split(" " ).map(w=>w? (w[0].toUpperCase()+w.slice(1)) : w).join(" " )}
+  function tryParseNumber(val){const s=norm(val).replace(',', '.'); if(!s) return null; const n=Number(s); return Number.isFinite(n)?n:null}
+  function escapeHtml(str){return String(str ?? "").replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
+
+  function loadState(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      try{
+        const p = JSON.parse(raw);
+        return {itemsCatalog: p.itemsCatalog || [], recipes: p.recipes || [], shoppingList: p.shoppingList || [], ui: p.ui || {}};
+      } catch(e) {}
+    }
+    return {itemsCatalog: [], recipes: [], shoppingList: [], ui: {}};
+  }
+
+  let state = loadState();
+  function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+  function migrateState(){
+    for(const it of state.shoppingList){
+      if(typeof it.included !== 'boolean') it.included = true;
+      if(typeof it.checked !== 'boolean') it.checked = false;
+    }
+    if(!state.ui.recipeDraft) state.ui.recipeDraft = { name: "", ingredients: [] };
+    if(!state.ui.shopMode) state.ui.shopMode = 'review';
+    if(!state.ui.shopSort) state.ui.shopSort = 'group';
+    if(!state.ui.activeTab) state.ui.activeTab = 'build';
+    if(!state.ui.undo) state.ui.undo = null;
+    if(typeof state.ui.selectedRecipeId === 'undefined') state.ui.selectedRecipeId = null;
+  }
+
+  function setUndoEnabled(){
+    const hasUndo = !!(state.ui.undo && state.ui.undo.snapshot);
+    btnUndo.disabled = !hasUndo;
+    btnUndo.textContent = hasUndo ? `Undo (${state.ui.undo.action})` : 'Undo';
+  }
+
+  function pushUndo(action){
+    const uiCopy = {...state.ui};
+    uiCopy.undo = null;
+    const snap = { itemsCatalog: state.itemsCatalog, recipes: state.recipes, shoppingList: state.shoppingList, ui: uiCopy };
+    state.ui.undo = { action, snapshot: JSON.stringify(snap) };
+    saveState();
+    setUndoEnabled();
+  }
+
+  function undoLast(){
+    if(!(state.ui.undo && state.ui.undo.snapshot)) return;
+    try{
+      const parsed = JSON.parse(state.ui.undo.snapshot);
+      state.itemsCatalog = parsed.itemsCatalog || [];
+      state.recipes = parsed.recipes || [];
+      state.shoppingList = parsed.shoppingList || [];
+      state.ui = parsed.ui || {};
+      state.ui.undo = null;
+      migrateState();
+      saveState();
+      setUndoEnabled();
+      renderAll();
+    } catch(e) {
+      alert('Undo failed.');
+    }
+  }
+
+  function allGroups(includeAll=true){ return includeAll ? Groups : Groups.filter(g => g !== 'All'); }
+  function fillSelect(el, groups, selected){
+    el.innerHTML = '';
+    for(const g of groups){
+      const o = document.createElement('option');
+      o.value = g; o.textContent = g;
+      if(g === selected) o.selected = true;
+      el.appendChild(o);
+    }
+  }
+
+  function seedCatalogue(){
+    const current = state.ui.seedVersion || 0;
+    if(current >= SEED_VERSION) return;
+    const existing = new Map(state.itemsCatalog.map(i => [i.name.toLowerCase(), true]));
+    for(const [name, group] of seedItemsNZ){
+      const key = String(name).toLowerCase();
+      if(existing.has(key)) continue;
+      state.itemsCatalog.push({ id: uid('item'), name: titleCase(name), group: allGroups(false).includes(group) ? group : 'Other' });
+      existing.set(key, true);
+    }
+    state.ui.seedVersion = SEED_VERSION;
+    saveState();
+  }
+
+  function findItemByName(name){ const n = norm(name).toLowerCase(); return state.itemsCatalog.find(i => i.name.toLowerCase() === n); }
+  function upsertItem(name, groupIfNew){
+    const clean = titleCase(name);
+    if(!clean) return null;
+    const ex = findItemByName(clean);
+    if(ex) return ex;
+    const group = allGroups(false).includes(groupIfNew) ? groupIfNew : 'Other';
+    const item = { id: uid('item'), name: clean, group };
+    state.itemsCatalog.push(item);
+    saveState();
+    return item;
+  }
+
+  function filterCatalog({search, group, alpha}){
+    const s = norm(search).toLowerCase();
+    return state.itemsCatalog
+      .filter(i => {
+        const n = i.name.toLowerCase();
+        const okSearch = !s || n.includes(s);
+        const okGroup = !group || group === 'All' || i.group === group;
+        const okAlpha = !alpha || alpha === 'All' || i.name.toUpperCase().startsWith(alpha);
+        return okSearch && okGroup && okAlpha;
+      })
+      .sort((a,b) => a.name.localeCompare(b.name));
+  }
+
+  function highlightMatch(name, search){
+    const s = norm(search);
+    if(!s) return escapeHtml(name);
+    const idx = name.toLowerCase().indexOf(s.toLowerCase());
+    if(idx < 0) return escapeHtml(name);
+    const a = name.slice(0, idx);
+    const b = name.slice(idx, idx + s.length);
+    const c = name.slice(idx + s.length);
+    return `${escapeHtml(a)}<span style="color:var(--accent); font-weight:900">${escapeHtml(b)}</span>${escapeHtml(c)}`;
+  }
+
+  function buildAlphaPills(container, stateKey, onPick){
+    container.innerHTML='';
+    const letters = ['All'].concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+    const active = state.ui[stateKey] || 'All';
+    for(const ch of letters){
+      const pill = document.createElement('span');
+      pill.className = 'pill' + (ch === active ? ' active' : '');
+      pill.textContent = ch;
+      pill.addEventListener('click', () => {
+        for(const p of container.querySelectorAll('.pill')) p.classList.remove('active');
+        pill.classList.add('active');
+        state.ui[stateKey] = ch;
+        saveState();
+        onPick(ch);
+      });
+      container.appendChild(pill);
+    }
+  }
+
+  function renderItemPicker(prefix){
+    const searchEl = document.getElementById(prefix + 'Search');
+    const groupEl = document.getElementById(prefix + 'GroupFilter');
+    const resultsEl = document.getElementById(prefix + 'Results');
+    const hintEl = document.getElementById(prefix + 'SearchHint');
+    if(!searchEl || !groupEl || !resultsEl) return;
+
+    const alphaKey = prefix === 'item' ? 'itemAlpha' : 'ingAlpha';
+    const alpha = state.ui[alphaKey] || 'All';
+    const group = groupEl.value || 'All';
+    const search = searchEl.value || '';
+
+    const items = filterCatalog({search, group, alpha});
+    const shown = items.slice(0, 250);
+
+    if(hintEl){
+      const ss = norm(search);
+      hintEl.textContent = ss ? `${items.length} match(es) for "${ss}"` : `${state.itemsCatalog.length} item(s) in catalogue`;
+    }
+
+    resultsEl.innerHTML='';
+    if(!shown.length){ resultsEl.innerHTML = '<div class="mini">No matches.</div>'; return; }
+
+    for(const it of shown){
+      const row = document.createElement('div');
+      row.className = 'itemRow';
+      row.innerHTML = `<div><div class="name">${highlightMatch(it.name, search)}</div><div class="meta">${escapeHtml(it.group)}</div></div><div class="meta">Click</div>`;
+      row.addEventListener('click', () => {
+        if(prefix === 'item'){
+          manualName.value = it.name;
+          manualGroup.value = it.group;
+          manualAmount.focus();
+        } else {
+          ingName.value = it.name;
+          ingGroup.value = it.group;
+          ingAmount.focus();
+        }
+      });
+      resultsEl.appendChild(row);
+    }
+  }
+
+  function formatQty(amount, unit){
+    const a = norm(amount);
+    const u = norm(unit);
+    if(!a && !u) return '';
+    if(a && u) return a + ' ' + u;
+    return a || u;
+  }
+
+  function addToShoppingList({item, amount, unit, source, recipeId=null, recipeName=null}){
+    const amt = norm(amount);
+    const u = norm(unit);
+
+    if(source === 'recipe'){
+      const incomingN = tryParseNumber(amt);
+      const existing = state.shoppingList.find(x => x.source === 'recipe' && x.itemId === item.id && norm(x.unit) === u);
+      if(existing){
+        const existingN = tryParseNumber(existing.amount);
+        if(incomingN !== null && existingN !== null) existing.amount = String(existingN + incomingN);
+        else{
+          if(amt && existing.amount && existing.amount !== amt) existing.amount = existing.amount + ' + ' + amt;
+          else if(amt && !existing.amount) existing.amount = amt;
+        }
+        existing.included = true;
+        existing.recipeIds = Array.from(new Set([...(existing.recipeIds || []), recipeId].filter(Boolean)));
+        existing.recipeNames = Array.from(new Set([...(existing.recipeNames || []), recipeName].filter(Boolean)));
+        saveState();
+        return;
+      }
+    }
+
+    state.shoppingList.push({
+      id: uid('shop'),
+      itemId: item.id,
+      name: item.name,
+      group: item.group,
+      amount: amt,
+      unit: u,
+      source,
+      checked: false,
+      included: true,
+      recipeIds: recipeId ? [recipeId] : [],
+      recipeNames: recipeName ? [recipeName] : []
+    });
+    saveState();
+  }
+
+  function toggleChecked(id, checked){
+    pushUndo('Tick');
+    const it = state.shoppingList.find(x => x.id === id);
+    if(!it) return;
+    it.checked = checked;
+    saveState();
+    renderShoppingList();
+  }
+
+  function toggleIncluded(id, included){
+    pushUndo('Keep');
+    const it = state.shoppingList.find(x => x.id === id);
+    if(!it) return;
+    it.included = included;
+    saveState();
+    renderShoppingList();
+  }
+
+  function getShoppingFiltered(){
+    const search = norm(shopSearch.value).toLowerCase();
+    const group = shopGroup.value || 'All';
+    const sortMode = state.ui.shopSort || 'group';
+    const mode = state.ui.shopMode || 'review';
+
+    let items = state.shoppingList.slice();
+    if(mode === 'instore') items = items.filter(x => x.included);
+
+    items = items.filter(x => {
+      const okSearch = !search || x.name.toLowerCase().includes(search);
+      const okGroup = group === 'All' || x.group === group;
+      return okSearch && okGroup;
+    });
+
+    const sortByGroup = (a,b) => Groups.indexOf(a.group) - Groups.indexOf(b.group) || a.name.localeCompare(b.name);
+    const sortByAlpha = (a,b) => a.name.localeCompare(b.name) || Groups.indexOf(a.group) - Groups.indexOf(b.group);
+    items.sort(sortMode === 'alpha' ? sortByAlpha : sortByGroup);
+    return items;
+  }
+
+  function renderShoppingList(){
+    const mode = state.ui.shopMode || 'review';
+
+    const total = state.shoppingList.length;
+    const kept = state.shoppingList.filter(x => x.included).length;
+    const checked = state.shoppingList.filter(x => x.checked).length;
+    shopCounts.textContent = `Total: ${total}. Kept: ${kept}. Checked: ${checked}.`;
+
+    const items = getShoppingFiltered();
+    shoppingList.innerHTML = '';
+
+    if(!items.length){
+      shoppingList.innerHTML = '<div class="mini">No items match the current filters.</div>';
+      return;
+    }
+
+    const byGroup = new Map();
+    for(const it of items){
+      if(!byGroup.has(it.group)) byGroup.set(it.group, []);
+      byGroup.get(it.group).push(it);
+    }
+
+    for(const g of Groups.filter(x => x !== 'All')){
+      if(!byGroup.has(g)) continue;
+      const groupItems = byGroup.get(g);
+
+      const gh = document.createElement('div');
+      gh.className = 'groupHeader';
+      gh.innerHTML = `<div>${escapeHtml(g)}</div><div class="badge">${groupItems.length}</div>`;
+      shoppingList.appendChild(gh);
+
+      for(const it of groupItems){
+        const row = document.createElement('div');
+        row.className = `shopItem ${it.source} ${(mode === 'instore' && it.checked) ? 'checked' : ''}`;
+        const qtyText = formatQty(it.amount, it.unit);
+
+        if(mode === 'review'){
+          row.innerHTML = `<input type="checkbox" ${it.included ? 'checked' : ''} aria-label="Keep item" />
+            <div class="title"><span class="name">${escapeHtml(it.name)}</span><span class="qty">${escapeHtml(qtyText)}</span><span class="tag">${escapeHtml(it.group)}</span></div>
+            <div></div>`;
+          row.querySelector('input[type="checkbox"]').addEventListener('change', (e) => toggleIncluded(it.id, e.target.checked));
+        } else {
+          row.innerHTML = `<input type="checkbox" ${it.checked ? 'checked' : ''} aria-label="Tick item" />
+            <div class="title"><span class="name">${escapeHtml(it.name)}</span><span class="qty">${escapeHtml(qtyText)}</span></div>
+            <div></div>`;
+          row.querySelector('input[type="checkbox"]').addEventListener('change', (e) => toggleChecked(it.id, e.target.checked));
+        }
+
+        shoppingList.appendChild(row);
+      }
+    }
+  }
+
+  let recipeDraft = state.ui.recipeDraft;
+
+  function persistDraft(){ state.ui.recipeDraft = recipeDraft; saveState(); }
+
+  function clearIngredientForm(){ ingName.value = ''; ingAmount.value = ''; ingUnit.value = ''; ingGroup.value = 'Other'; }
+
+  function renderRecipeDraft(){
+    recipeIngredientsPreview.innerHTML = '';
+    if(!recipeDraft.ingredients.length){
+      recipeIngredientsPreview.innerHTML = '<div class="mini">No ingredients added yet.</div>';
+      return;
+    }
+
+    for(const ing of recipeDraft.ingredients){
+      const row = document.createElement('div');
+      row.className = 'itemRow';
+      row.style.cursor = 'default';
+      row.innerHTML = `<div><div class="name">${escapeHtml(ing.name)}</div><div class="meta">${escapeHtml(formatQty(ing.amount, ing.unit))} • ${escapeHtml(ing.group)}</div></div>
+        <div class="row" style="gap:6px"><button class="btn small" data-act="edit">Edit</button><button class="btn small danger" data-act="remove">Remove</button></div>`;
+
+      row.querySelector('[data-act="remove"]').addEventListener('click', () => {
+        pushUndo('Remove ingredient');
+        recipeDraft.ingredients = recipeDraft.ingredients.filter(x => x !== ing);
+        persistDraft();
+        renderRecipeDraft();
+      });
+
+      row.querySelector('[data-act="edit"]').addEventListener('click', () => {
+        const a = prompt('Amount:', ing.amount || '');
+        if(a === null) return;
+        const u = prompt('Unit:', ing.unit || '');
+        if(u === null) return;
+        pushUndo('Edit ingredient');
+        ing.amount = norm(a);
+        ing.unit = norm(u);
+        persistDraft();
+        renderRecipeDraft();
+      });
+
+      recipeIngredientsPreview.appendChild(row);
+    }
+  }
+
+  function saveRecipe(){
+    const name = titleCase(recipeName.value);
+    if(!name){ alert('Recipe name is required.'); return; }
+    if(!recipeDraft.ingredients.length){ alert('Add at least one ingredient.'); return; }
+
+    pushUndo('Save recipe');
+
+    state.recipes.push({ id: uid('recipe'), name, ingredients: recipeDraft.ingredients.map(i => ({ itemId: i.itemId, amount: norm(i.amount), unit: norm(i.unit) })) });
+
+    recipeDraft = { name: '', ingredients: [] };
+    state.ui.recipeDraft = recipeDraft;
+    recipeName.value = '';
+    persistDraft();
+    renderRecipeDraft();
+    renderRecipesList();
+    clearSelectedRecipe();
+  }
+
+  function clearRecipeDraftAction(){
+    if(!confirm('Clear this recipe draft?')) return;
+    pushUndo('Clear draft');
+    recipeDraft = { name: '', ingredients: [] };
+    state.ui.recipeDraft = recipeDraft;
+    recipeName.value = '';
+    persistDraft();
+    renderRecipeDraft();
+  }
+
+  function renderRecipesList(){
+    const s = norm(recipeSearch.value).toLowerCase();
+    const recipes = state.recipes.filter(r => !s || r.name.toLowerCase().includes(s)).sort((a,b) => a.name.localeCompare(b.name));
+    recipesList.innerHTML = '';
+    if(!recipes.length){ recipesList.innerHTML = '<div class="mini">No saved recipes.</div>'; return; }
+
+    for(const r of recipes){
+      const row = document.createElement('div');
+      row.className = 'itemRow';
+      row.style.cursor = 'default';
+      row.innerHTML = `<div><div class="name">${escapeHtml(r.name)}</div><div class="meta">${r.ingredients.length} item(s)</div></div>
+        <div class="row" style="gap:6px"><button class="btn small" data-act="select">Select</button><button class="btn small danger" data-act="del">Delete</button></div>`;
+
+      row.querySelector('[data-act="select"]').addEventListener('click', () => selectRecipe(r.id));
+      row.querySelector('[data-act="del"]').addEventListener('click', () => {
+        if(!confirm(`Delete recipe "${r.name}"?`)) return;
+        pushUndo('Delete recipe');
+        state.recipes = state.recipes.filter(x => x.id !== r.id);
+        saveState();
+        renderRecipesList();
+        if(state.ui.selectedRecipeId === r.id) clearSelectedRecipe();
+      });
+
+      recipesList.appendChild(row);
+    }
+  }
+
+  function clearSelectedRecipe(){
+    state.ui.selectedRecipeId = null;
+    saveState();
+    selectedRecipeHint.textContent = 'Select a recipe to see its items.';
+    selectedRecipeItems.innerHTML = '';
+    btnAddSelectedRecipeItems.disabled = true;
+    btnAddAllRecipeItems.disabled = true;
+  }
+
+  function selectRecipe(recipeId){ state.ui.selectedRecipeId = recipeId; saveState(); renderSelectedRecipe(); }
+
+  function renderSelectedRecipe(){
+    const recipeId = state.ui.selectedRecipeId;
+    const r = state.recipes.find(x => x.id === recipeId);
+    if(!r){ clearSelectedRecipe(); return; }
+
+    selectedRecipeHint.textContent = `Recipe items: ${r.name}`;
+    selectedRecipeItems.innerHTML = '';
+
+    if(!r.ingredients.length){
+      selectedRecipeItems.innerHTML = '<div class="mini">No ingredients.</div>';
+      btnAddSelectedRecipeItems.disabled = true;
+      btnAddAllRecipeItems.disabled = true;
+      return;
+    }
+
+    btnAddSelectedRecipeItems.disabled = false;
+    btnAddAllRecipeItems.disabled = false;
+
+    for(const ing of r.ingredients){
+      const item = state.itemsCatalog.find(i => i.id === ing.itemId);
+      const name = item ? item.name : '(missing item)';
+      const group = item ? item.group : 'Other';
+      const qty = formatQty(ing.amount, ing.unit);
+
+      const line = document.createElement('div');
+      line.className = 'shopItem recipe';
+      line.style.gridTemplateColumns = '22px 1fr';
+      line.innerHTML = `<input type="checkbox" checked data-itemid="${escapeHtml(ing.itemId)}" data-amount="${escapeHtml(ing.amount || '')}" data-unit="${escapeHtml(ing.unit || '')}" />
+        <div class="title"><span class="name">${escapeHtml(name)}</span><span class="qty">${escapeHtml(qty)}</span><span class="tag">${escapeHtml(group)}</span></div>`;
+
+      selectedRecipeItems.appendChild(line);
+    }
+  }
+
+  function addSelectedRecipeItems(all=false){
+    const recipeId = state.ui.selectedRecipeId;
+    const r = state.recipes.find(x => x.id === recipeId);
+    if(!r){ alert('Select a recipe first.'); return; }
+
+    const boxes = Array.from(selectedRecipeItems.querySelectorAll('input[type="checkbox"][data-itemid]'));
+    const chosen = all ? boxes : boxes.filter(b => b.checked);
+    if(!chosen.length){ alert('No items selected.'); return; }
+
+    pushUndo(all ? 'Add all recipe items' : 'Add selected recipe items');
+
+    for(const cb of chosen){
+      const item = state.itemsCatalog.find(i => i.id === cb.dataset.itemid);
+      if(!item) continue;
+      addToShoppingList({ item, amount: cb.dataset.amount, unit: cb.dataset.unit, source: 'recipe', recipeId: r.id, recipeName: r.name });
+    }
+
+    renderShoppingList();
+    setTab('shopping');
+  }
+
+  function setTab(tabKey){
+    for(const t of document.querySelectorAll('.tab')) t.classList.toggle('active', t.dataset.tab === tabKey);
+    tab_build.style.display = tabKey === 'build' ? '' : 'none';
+    tab_shopping.style.display = tabKey === 'shopping' ? '' : 'none';
+    tab_manage.style.display = tabKey === 'manage' ? '' : 'none';
+    state.ui.activeTab = tabKey;
+    saveState();
+    if(tabKey === 'shopping') renderShoppingList();
+  }
+
+  function setShopMode(mode){
+    for(const t of document.querySelectorAll('.subTab')) t.classList.toggle('active', t.dataset.subtab === mode);
+    state.ui.shopMode = mode;
+    saveState();
+    shopReviewActions.style.display = mode === 'review' ? '' : 'none';
+    shopInstoreActions.style.display = mode === 'instore' ? '' : 'none';
+    renderShoppingList();
+  }
+
+  function setActiveSort(sortKey){
+    for(const p of document.querySelectorAll('[data-shop-sort]')) p.classList.remove('active');
+    const pill = document.querySelector(`[data-shop-sort="${sortKey}"]`);
+    if(pill) pill.classList.add('active');
+    state.ui.shopSort = sortKey;
+    saveState();
+    renderShoppingList();
+  }
+
+  function renderAll(){
+    renderItemPicker('item');
+    renderItemPicker('ing');
+    renderRecipeDraft();
+    renderRecipesList();
+    renderSelectedRecipe();
+    renderShoppingList();
+    setUndoEnabled();
+  }
+
+  function setup(){
+    migrateState();
+    seedCatalogue();
+
+    window.tab_build = document.getElementById('tab-build');
+    window.tab_shopping = document.getElementById('tab-shopping');
+    window.tab_manage = document.getElementById('tab-manage');
+
+    fillSelect(itemGroupFilter, allGroups(true), 'All');
+    fillSelect(ingGroupFilter, allGroups(true), 'All');
+    fillSelect(manualGroup, allGroups(false), 'Other');
+    fillSelect(ingGroup, allGroups(false), 'Other');
+    fillSelect(shopGroup, allGroups(true), 'All');
+
+    buildAlphaPills(itemAlphaFilter, 'itemAlpha', () => renderItemPicker('item'));
+    buildAlphaPills(ingAlphaFilter, 'ingAlpha', () => renderItemPicker('ing'));
+
+    for(const t of document.querySelectorAll('.tab')) t.addEventListener('click', () => setTab(t.dataset.tab));
+    for(const t of document.querySelectorAll('.subTab')) t.addEventListener('click', () => setShopMode(t.dataset.subtab));
+
+    for(const p of document.querySelectorAll('[data-shop-sort]')) p.addEventListener('click', () => setActiveSort(p.dataset.shopSort));
+    setActiveSort(state.ui.shopSort || 'group');
+
+    itemSearch.addEventListener('input', () => renderItemPicker('item'));
+    itemGroupFilter.addEventListener('change', () => renderItemPicker('item'));
+    ingSearch.addEventListener('input', () => renderItemPicker('ing'));
+    ingGroupFilter.addEventListener('change', () => renderItemPicker('ing'));
+
+    recipeDraft = state.ui.recipeDraft;
+    recipeName.value = recipeDraft.name || '';
+    recipeName.addEventListener('input', () => { recipeDraft.name = norm(recipeName.value); persistDraft(); });
+
+    btnAddManual.addEventListener('click', () => {
+      const item = upsertItem(manualName.value, manualGroup.value);
+      if(!item){ alert('Item name is required.'); return; }
+      pushUndo('Add manual');
+      addToShoppingList({ item, amount: manualAmount.value, unit: manualUnit.value, source: 'manual' });
+      manualName.value=''; manualAmount.value=''; manualUnit.value='';
+      renderShoppingList();
+      renderItemPicker('item');
+    });
+    btnClearManual.addEventListener('click', () => { manualName.value=''; manualAmount.value=''; manualUnit.value=''; });
+
+    btnAddIngredient.addEventListener('click', () => {
+      const item = upsertItem(ingName.value, ingGroup.value);
+      if(!item){ alert('Ingredient item name is required.'); return; }
+      pushUndo('Add ingredient');
+      recipeDraft.ingredients.push({ itemId: item.id, name: item.name, group: item.group, amount: norm(ingAmount.value), unit: norm(ingUnit.value) });
+      persistDraft();
+      renderRecipeDraft();
+      clearIngredientForm();
+      renderItemPicker('ing');
+    });
+    btnClearIngredient.addEventListener('click', clearIngredientForm);
+    btnSaveRecipe.addEventListener('click', saveRecipe);
+    btnClearRecipeDraft.addEventListener('click', clearRecipeDraftAction);
+
+    recipeSearch.addEventListener('input', renderRecipesList);
+    btnAddSelectedRecipeItems.addEventListener('click', () => addSelectedRecipeItems(false));
+    btnAddAllRecipeItems.addEventListener('click', () => addSelectedRecipeItems(true));
+
+    shopSearch.addEventListener('input', renderShoppingList);
+    shopGroup.addEventListener('change', renderShoppingList);
+
+    btnKeepAll.addEventListener('click', () => { pushUndo('Keep all'); for(const it of state.shoppingList) it.included=true; saveState(); renderShoppingList(); });
+    btnExcludeAll.addEventListener('click', () => { pushUndo('Exclude all'); for(const it of state.shoppingList) it.included=false; saveState(); renderShoppingList(); });
+    btnRemoveExcluded.addEventListener('click', () => { pushUndo('Remove excluded'); state.shoppingList = state.shoppingList.filter(x => x.included); saveState(); renderShoppingList(); });
+    btnUncheckAll.addEventListener('click', () => { pushUndo('Uncheck all'); for(const it of state.shoppingList) it.checked=false; saveState(); renderShoppingList(); });
+    btnInstoreUncheckAll.addEventListener('click', () => { pushUndo('Uncheck all'); for(const it of state.shoppingList) it.checked=false; saveState(); renderShoppingList(); });
+
+    btnUndo.addEventListener('click', undoLast);
+    document.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+      const isMac = navigator.platform.toLowerCase().includes('mac');
+      const mod = isMac ? e.metaKey : e.ctrlKey;
+      if(mod && key === 'z'){ e.preventDefault(); undoLast(); }
+    });
+
+    btnReset.addEventListener('click', () => { if(!confirm('Reset all data (items, recipes, shopping list)?')) return; localStorage.removeItem(STORAGE_KEY); location.reload(); });
+
+    btnExport.addEventListener('click', () => {
+      const data = JSON.stringify(state, null, 2);
+      const blob = new Blob([data], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'shopping-list-builder-export.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    btnImport.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+      input.addEventListener('change', async () => {
+        const file = input.files[0];
+        if(!file) return;
+        const text = await file.text();
+        try{
+          pushUndo('Import');
+          const parsed = JSON.parse(text);
+          if(!parsed.itemsCatalog || !parsed.shoppingList || !parsed.recipes){ alert('Invalid file structure.'); return; }
+          state = parsed;
+          migrateState();
+          saveState();
+          location.reload();
+        } catch(e){ alert('Could not import file.'); }
+      });
+      input.click();
+    });
+
+    if(state.ui.selectedRecipeId) renderSelectedRecipe(); else clearSelectedRecipe();
+
+    renderAll();
+    setShopMode(state.ui.shopMode || 'review');
+    setTab(state.ui.activeTab || 'build');
+    setUndoEnabled();
+  }
+
+  setup();
+</script>
+</body>
+</html>
